@@ -10,6 +10,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+/*AGREGADOs*/
+use Symfony\Component\Serializer\Serializer; 
+use Symfony\Component\Serializer\Encoder\JsonEncoder; 
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer; 
+/*AGREGADOs*/
+
 /**
  * @Route("/mensaje")
  */
@@ -20,9 +26,17 @@ class MensajeController extends AbstractController
      */
     public function index(MensajeRepository $mensajeRepository): Response
     {
-        return $this->render('mensaje/index.html.twig', [
-            'mensajes' => $mensajeRepository->findAll(),
-        ]);
+        $em = $this->getDoctrine()->getManager();
+        $mensajes = $em->getRepository('App:Mensaje')->findAll();
+
+        $encoders = array(new JsonEncoder());
+        $normalizers = array(new ObjectNormalizer());
+        $serializer = new Serializer($normalizers, $encoders);
+
+        $response = new Response();
+        $response->setContent($serializer->serialize($mensajes, 'json'));
+        $response->headers->set('Content-Type', 'application/json');
+        return $response;       
     }
 
     /**
@@ -30,22 +44,27 @@ class MensajeController extends AbstractController
      */
     public function new(Request $request): Response
     {
+        //recupero atributos
+        $data = json_decode($request->getContent(), true);
         $mensaje = new Mensaje();
-        $form = $this->createForm(MensajeType::class, $mensaje);
-        $form->handleRequest($request);
+        $mensaje->setDesde($data['desde']);
+        $mensaje->setPara($data['para']);
+        $mensaje->setTexto($data['texto']);
+        $fecha = new \DateTime($data['fecha']);
+        $mensaje->setFecha($fecha);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($mensaje);
-            $entityManager->flush();
+        //confecciono una entidad empresa para asignar a mensaje
+        $empresaArray= $data['empresa'];
+        $idEmpresa = $empresaArray['id'];
+        $em = $this->getDoctrine()->getManager();
+        $empresa = $em->getRepository("App:Empresa")->find($idEmpresa);
+        $mensaje->setEmpresa($empresa);
 
-            return $this->redirectToRoute('mensaje_index');
-        }
+        $em->persist($mensaje);
+        $em->flush();
 
-        return $this->render('mensaje/new.html.twig', [
-            'mensaje' => $mensaje,
-            'form' => $form->createView(),
-        ]);
+        $result['status'] = 'ok';
+        return new Response(json_encode($result), 200);
     }
 
     /**
@@ -61,36 +80,49 @@ class MensajeController extends AbstractController
     /**
      * @Route("/{id}/edit", name="mensaje_edit", methods={"GET","POST"})
      */
-    public function edit(Request $request, Mensaje $mensaje): Response
+    public function edit($id, Request $request): Response
     {
-        $form = $this->createForm(MensajeType::class, $mensaje);
-        $form->handleRequest($request);
+        $data = json_decode($request->getContent(), true);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
+        $em = $this->getDoctrine()->getManager();
+        $mensaje = $em->getRepository('App:Mensaje')->find($id);
 
-            return $this->redirectToRoute('mensaje_index', [
-                'id' => $mensaje->getId(),
-            ]);
-        }
+        $mensaje->setDesde($data['desde']);
+        $mensaje->setPara($data['para']);
+        $mensaje->setTexto($data['texto']);
+        $fecha = new \DateTime($data['fecha']);
+        $mensaje->setFecha($fecha);
 
-        return $this->render('mensaje/edit.html.twig', [
-            'mensaje' => $mensaje,
-            'form' => $form->createView(),
-        ]);
+        
+        //recupero la entidad empresa de la BD que se corresponde con la id
+        //que se recibe en formato JSON y le asigno a la propiedad empresa de mensaje.
+        $empresaArray= $data['empresa'];
+        $idEmpresa = $empresaArray['id'];
+        $empresa = $em->getRepository("App:Empresa")->find($idEmpresa);
+        $mensaje->setEmpresa($empresa);
+        
+
+        //guardo en la BD la entidad mensaje modificada.
+        $em->persist($mensaje);
+        $em->flush();
+        $result['status'] = 'ok';
+        return new Response(json_encode($result), 200);
     }
 
     /**
      * @Route("/{id}", name="mensaje_delete", methods={"DELETE"})
      */
-    public function delete(Request $request, Mensaje $mensaje): Response
+    public function delete($id): Response
+    //public function delete(Request $request, Mensaje $mensaje): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$mensaje->getId(), $request->request->get('_token'))) {
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->remove($mensaje);
-            $entityManager->flush();
+        $em = $this->getDoctrine()->getManager();
+        $mensaje = $em->getRepository('App:Mensaje')->find($id);
+        if (!$mensaje){
+            throw $this->createNotFoundException('id incorrecta');
         }
-
-        return $this->redirectToRoute('mensaje_index');
+        $em->remove($mensaje);
+        $em->flush();
+        $result['status'] = 'ok';
+        return new Response(json_encode($result), 200);
     }
 }

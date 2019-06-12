@@ -10,6 +10,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+
 /**
  * @Route("/empresa")
  */
@@ -20,9 +24,22 @@ class EmpresaController extends AbstractController
      */
     public function index(EmpresaRepository $empresaRepository): Response
     {
-        return $this->render('empresa/index.html.twig', [
-            'empresas' => $empresaRepository->findAll(),
-        ]);
+        //return $this->render('empresa/index.html.twig', [
+        //    'empresas' => $empresaRepository->findAll(),
+        //]);
+
+        $em = $this->getDoctrine()->getManager();
+	$empresas = $em->getRepository('App:Empresa')->findAll();
+	$response = new Response();
+	$encoders = array(new JsonEncoder());
+	$normalizers = array(new ObjectNormalizer());
+	$serializer = new Serializer($normalizers, $encoders);
+	$response->setContent(json_encode(array(
+	'empresas' => $serializer->serialize($empresas, 'json'),
+	)));
+	$response->headers->set('Content-Type', 'application/json');
+	return $response;
+
     }
 
     /**
@@ -61,7 +78,7 @@ class EmpresaController extends AbstractController
     /**
      * @Route("/{id}/edit", name="empresa_edit", methods={"GET","POST"})
      */
-    public function edit(Request $request, Empresa $empresa): Response
+     public function edit(Request $request, Empresa $empresa): Response
     {
         $form = $this->createForm(EmpresaType::class, $empresa);
         $form->handleRequest($request);
