@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Moneda{% endblock %}
+
+{% block body %}
+    <h1>Moneda</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ moneda.id }}</td>
+            </tr>
+            <tr>
+                <th>Compra</th>
+                <td>{{ moneda.compra }}</td>
+            </tr>
+            <tr>
+                <th>Venta</th>
+                <td>{{ moneda.venta }}</td>
+            </tr>
+            <tr>
+                <th>MontoRecibido</th>
+                <td>{{ moneda.montoRecibido }}</td>
+            </tr>
+            <tr>
+                <th>MontoEntregado</th>
+                <td>{{ moneda.montoEntregado }}</td>
+            </tr>
+            <tr>
+                <th>TipoCambio</th>
+                <td>{{ moneda.tipoCambio }}</td>
+            </tr>
+            <tr>
+                <th>Fecha</th>
+                <td>{{ moneda.fecha ? moneda.fecha|date('Y-m-d') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('moneda_index') }}">back to list</a>
+
+    <a href="{{ path('moneda_edit', {'id': moneda.id}) }}">edit</a>
+
+    {{ include('moneda/_delete_form.html.twig') }}
+{% endblock %}

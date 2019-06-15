@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Moneda{% endblock %}
+
+{% block body %}
+    <h1>Edit Moneda</h1>
+
+    {{ include('moneda/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('moneda_index') }}">back to list</a>
+
+    {{ include('moneda/_delete_form.html.twig') }}
+{% endblock %}

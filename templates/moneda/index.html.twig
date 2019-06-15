@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Moneda index{% endblock %}
+
+{% block body %}
+    <h1>Moneda index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Compra</th>
+                <th>Venta</th>
+                <th>MontoRecibido</th>
+                <th>MontoEntregado</th>
+                <th>TipoCambio</th>
+                <th>Fecha</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for moneda in monedas %}
+            <tr>
+                <td>{{ moneda.id }}</td>
+                <td>{{ moneda.compra }}</td>
+                <td>{{ moneda.venta }}</td>
+                <td>{{ moneda.montoRecibido }}</td>
+                <td>{{ moneda.montoEntregado }}</td>
+                <td>{{ moneda.tipoCambio }}</td>
+                <td>{{ moneda.fecha ? moneda.fecha|date('Y-m-d') : '' }}</td>
+                <td>
+                    <a href="{{ path('moneda_show', {'id': moneda.id}) }}">show</a>
+                    <a href="{{ path('moneda_edit', {'id': moneda.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="8">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('moneda_new') }}">Create new</a>
+{% endblock %}
