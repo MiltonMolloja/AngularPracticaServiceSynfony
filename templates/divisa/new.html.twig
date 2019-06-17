@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New Divisa{% endblock %}
+
+{% block body %}
+    <h1>Create new Divisa</h1>
+
+    {{ include('divisa/_form.html.twig') }}
+
+    <a href="{{ path('divisa_index') }}">back to list</a>
+{% endblock %}

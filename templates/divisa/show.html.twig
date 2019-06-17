@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Divisa{% endblock %}
+
+{% block body %}
+    <h1>Divisa</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ divisa.id }}</td>
+            </tr>
+            <tr>
+                <th>Compra</th>
+                <td>{{ divisa.compra }}</td>
+            </tr>
+            <tr>
+                <th>Venta</th>
+                <td>{{ divisa.venta }}</td>
+            </tr>
+            <tr>
+                <th>MontoRecibido</th>
+                <td>{{ divisa.montoRecibido }}</td>
+            </tr>
+            <tr>
+                <th>MontoEntregado</th>
+                <td>{{ divisa.montoEntregado }}</td>
+            </tr>
+            <tr>
+                <th>TipoCambio</th>
+                <td>{{ divisa.tipoCambio }}</td>
+            </tr>
+            <tr>
+                <th>Fecha</th>
+                <td>{{ divisa.fecha ? divisa.fecha|date('Y-m-d') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('divisa_index') }}">back to list</a>
+
+    <a href="{{ path('divisa_edit', {'id': divisa.id}) }}">edit</a>
+
+    {{ include('divisa/_delete_form.html.twig') }}
+{% endblock %}

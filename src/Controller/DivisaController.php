@@ -2,9 +2,9 @@
 
 namespace App\Controller;
 
-use App\Entity\Moneda;
-use App\Form\Moneda1Type;
-use App\Repository\MonedaRepository;
+use App\Entity\Divisa;
+use App\Form\DivisaType;
+use App\Repository\DivisaRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,48 +17,55 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 /*AGREGADOs*/
 
 /**
- * @Route("/moneda")
+ * @Route("/divisa")
  */
-class MonedaController extends AbstractController
+class DivisaController extends AbstractController
 {
     /**
-     * @Route("/", name="moneda_index", methods={"GET"})
+     * @Route("/", name="divisa_index", methods={"GET"})
      */
-    public function index(MonedaRepository $monedaRepository): Response
+    public function index(DivisaRepository $divisaRepository): Response
     {
         $em = $this->getDoctrine()->getManager();
-        $monedas = $em->getRepository('App:Moneda')->findAll();
+        $divisas = $em->getRepository('App:Divisa')->findAll();
 
         $encoders = array(new JsonEncoder());
         $normalizers = array(new ObjectNormalizer());
         $serializer = new Serializer($normalizers, $encoders);
 
         $response = new Response();
-        $response->setContent($serializer->serialize($monedas, 'json'));
+        $response->setContent($serializer->serialize($divisas, 'json'));
         $response->headers->set('Content-Type', 'application/json');
         return $response;
     }
 
     /**
-     * @Route("/new", name="moneda_new", methods={"GET","POST"})
+     * @Route("/new", name="divisa_new", methods={"GET","POST"})
      */
     public function new(Request $request): Response
     {
         //recupero atributos
         $data = json_decode($request->getContent(), true);
-        $moneda = new Moneda();
-        $moneda->setCompra($data['compra']);        
-        $moneda->setVenta($data['venta']);
-        $moneda->setMontoRecibido($data['montoRecibido']);
-        $moneda->setMontoEntregado($data['montoEntregado']);
-        $moneda->setTipoCambio($data['tipoCambio']);
+        $divisa = new Divisa();
+        $divisa->setCompra($data['compra']);        
+        $divisa->setVenta($data['venta']);
+        $divisa->setMontoRecibido($data['montoRecibido']);
+        $divisa->setMontoEntregado($data['montoEntregado']);
+        $divisa->setTipoCambio($data['tipoCambio']);
         $fecha = new \DateTime($data['fecha']);
-        $moneda->setFecha($fecha);
+        $divisa->setFecha($fecha);
 
         //Se Modifico El controlador para el Alta de Entidad Moneda  Sin Cliente
-        $em = $this->getDoctrine()->getManager();
+        //$em = $this->getDoctrine()->getManager();
 
-        $em->persist($moneda);
+        $clienteArray= $data['cliente'];
+        $idCliente = $clienteArray['id'];
+        $em = $this->getDoctrine()->getManager();
+        $cliente = $em->getRepository("App:Cliente")->find($idCliente);
+        $divisa->setCliente($cliente);
+
+
+        $em->persist($divisa);
         $em->flush();
 
 
@@ -68,48 +75,48 @@ class MonedaController extends AbstractController
     }
 
     /**
-     * @Route("/{id}", name="moneda_show", methods={"GET"})
+     * @Route("/{id}", name="divisa_show", methods={"GET"})
      */
-    public function show(Moneda $moneda): Response
+    public function show(Divisa $divisa): Response
     {
-        return $this->render('moneda/show.html.twig', [
-            'moneda' => $moneda,
+        return $this->render('divisa/show.html.twig', [
+            'divisa' => $divisa,
         ]);
     }
 
     /**
-     * @Route("/{id}/edit", name="moneda_edit", methods={"GET","POST"})
+     * @Route("/{id}/edit", name="divisa_edit", methods={"GET","POST"})
      */
-    public function edit(Request $request, Moneda $moneda): Response
+    public function edit(Request $request, Divisa $divisa): Response
     {
-        $form = $this->createForm(MonedaType::class, $moneda);
+        $form = $this->createForm(DivisaType::class, $divisa);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->getDoctrine()->getManager()->flush();
 
-            return $this->redirectToRoute('moneda_index', [
-                'id' => $moneda->getId(),
+            return $this->redirectToRoute('divisa_index', [
+                'id' => $divisa->getId(),
             ]);
         }
 
-        return $this->render('moneda/edit.html.twig', [
-            'moneda' => $moneda,
+        return $this->render('divisa/edit.html.twig', [
+            'divisa' => $divisa,
             'form' => $form->createView(),
         ]);
     }
 
     /**
-     * @Route("/{id}", name="moneda_delete", methods={"DELETE"})
+     * @Route("/{id}", name="divisa_delete", methods={"DELETE"})
      */
     public function delete($id): Response
     {
         $em = $this->getDoctrine()->getManager();
-        $moneda = $em->getRepository('App:Moneda')->find($id);
-        if (!$moneda){
+        $divisa = $em->getRepository('App:Divisa')->find($id);
+        if (!$divisa){
             throw $this->createNotFoundException('id incorrecta');
         }
-        $em->remove($moneda);
+        $em->remove($divisa);
         $em->flush();
         $result['status'] = 'ok';
         return new Response(json_encode($result), 200);
