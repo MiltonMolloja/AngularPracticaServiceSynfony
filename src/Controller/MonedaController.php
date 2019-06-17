@@ -47,7 +47,7 @@ class MonedaController extends AbstractController
         //recupero atributos
         $data = json_decode($request->getContent(), true);
         $moneda = new Moneda();
-        $moneda->setCompra($data['compra']);
+        $moneda->setCompra($data['compra']);        
         $moneda->setVenta($data['venta']);
         $moneda->setMontoRecibido($data['montoRecibido']);
         $moneda->setMontoEntregado($data['montoEntregado']);
@@ -55,15 +55,12 @@ class MonedaController extends AbstractController
         $fecha = new \DateTime($data['fecha']);
         $moneda->setFecha($fecha);
 
-        //confecciono una entidad moneda para asignar a moneda
-        $monedaArray= $data['moneda'];
-        $idMoneda = $empresaArray['id'];
+        //Se Modifico El controlador para el Alta de Entidad Moneda  Sin Cliente
         $em = $this->getDoctrine()->getManager();
-        $moneda = $em->getRepository("App:Moneda")->find($idMoneda);
-        $moneda->setMoneda($moneda);
 
         $em->persist($moneda);
         $em->flush();
+
 
         $result['status'] = 'ok';
         return new Response(json_encode($result), 200);
