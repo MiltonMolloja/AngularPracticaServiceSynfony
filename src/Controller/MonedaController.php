@@ -102,7 +102,7 @@ class MonedaController extends AbstractController
     /**
      * @Route("/{id}", name="moneda_delete", methods={"DELETE"})
      */
-    public function delete(Request $request, Moneda $moneda): Response
+    public function delete($id): Response
     {
         $em = $this->getDoctrine()->getManager();
         $moneda = $em->getRepository('App:Moneda')->find($id);
